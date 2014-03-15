@@ -1,0 +1,35 @@
+stupid-copy
+---
+
+Here are scripts originally used to copy back changes from target to source for Java Maven Project.
+But also can be used for other project with some customs.
+
+### feature
++ Copy files back from target to source or reverse.
+
+### usage
+Program know whether you what to  _deploy_ or _copyback_
+
+here will copy back files from target to source
+    stupidc %{ /home/workspace/magicsale/target/magicsale/WEB-INFO/classes/config.xml }
+    # => copy back to /home/workspace/magicsale/src/main/resources/config.xml 
+
+
+here will deploy files from source to target
+    stupidc %{ /home/workspace/magicsale/src/main/resources/config.xml }
+    # => deploy to /home/workspace/magicsale/target/magicsale/WEB-INFO/classes/config.xml 
+
+You need to give the _buildname_ param when it is different from project name. 
+    stupidc %{ /home/workspace/magicsale/src/main/resources/config.xml }, buildname: "magic"
+    # => deploy to /home/workspace/magicsale/target/magic/WEB-INFO/classes/config.xml 
+
+
+Wildcards are allowed, it's the same with ruby path, eg.
+    # handle all xml files in resoureces folder
+    stupidc %{ /home/workspace/magicsale/src/main/resources/*.xml }, buildname: "magic"
+    
+
+Following are deploy rules for Maven Web Project, _buildname_ default is project name.
+    src/main/resources to /target/#{buildname}/WEB-INFO/classes
+    src/main/webapp to /target/#{buildname}/
+
