@@ -28,21 +28,11 @@ describe Stupidc do
     @stupidc = Stupidc.new(@input, @output)
 
 
-    @workspace = File.dirname(__FILE__) + '/workspace'
+    @workspace = File.expand_path('../workspace', __FILE__)
     @project = %{magicsale}
 
     @target = "#{@workspace}/#{@project}/target/#{@project}/magic_list.jsp"
     @src = "#{@workspace}/#{@project}/src/main/webapp/magic_list.jsp"
-    
-    @target2 = "#{@workspace}/#{@project}/target/#{@project}/WEB-INFO/classes/magic_list.xml"
-    @src2 = "#{@workspace}/#{@project}/src/main/resources/magic_list.xml"
-
-    rmdir_if_exist(@workspace)
-
-  end
-
-  after do
-    rmdir_if_exist(@workspace)
   end
 
   describe "judge_build_name" do
@@ -52,39 +42,53 @@ describe Stupidc do
   end
 
   describe "copy" do
+    before do
+      @target2 = "#{@workspace}/#{@project}/target/#{@project}/WEB-INFO/classes/magic_list.xml"
+      @src2 = "#{@workspace}/#{@project}/src/main/resources/magic_list.xml"
+
+      rmdir_if_exist(@workspace)
+    end
+
+    after do
+      rmdir_if_exist(@workspace)
+    end
+
+
     it "should copy file to source when file is target" do
       touch @target
       @stupidc.copy(@target)
       FileTest.exist?(@src).must_equal true
-    end
 
-    it "should copy file to source when file is target other case" do
+
       touch @target2
       @stupidc.copy(@target2)
       FileTest.exist?(@src2).must_equal true
     end
 
 
-    it "should copy file to target when  a buildname is given" do
+    it "should copy file to target when a buildname is given" do
       touch @src
       @stupidc.copy(@src, buildname: @project)
       FileTest.exist?(@target).must_equal true
-    end
 
-
-    it "should copy file to target when  a buildname is given other case" do
       touch @src2
       @stupidc.copy(@src2, buildname: @project)
       FileTest.exist?(@target2).must_equal true
     end
 
-    it "should output fail info when :from is not exist" do
+    it "should output error message info when exception" do
       touch @src
 
-      @output.expect :puts, nil, [Stupidc::PATHNAME_REQUIRED]
+      @output.expect :puts, nil, [String]
+      @output.expect :puts, nil, [Stupidc::FAIL]
       @stupidc.copy(@src)
       @output.verify
     end
+
+    it "should raise error when buildname is nil" do
+      proc { @stupidc.load_parser(nil) }.must_raise  ArgumentError
+    end
+
   end
 
 end

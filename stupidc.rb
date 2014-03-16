@@ -63,45 +63,51 @@ end
 
 class Stupidc
   PATHNAME_REQUIRED = "--- buildname parameter required!"
+  FAIL = "--- copy failed!" 
 
-  def initialize(input=STDIN, out=STDOUT)
+  def initialize(input=STDIN, output=STDOUT)
     @input = input
-    @output = out
+    @output = output
   end
 
   def judge_build_name(path)
     path[%r{/target/(\w+)/}, 1]
   end
 
-  def get_rules(buildname)
-    rules = [ { 
+  def compatible_windows_path(path)
+    path.gsub('\\', '/')
+  end
+
+  def rules()
+    [ { 
       from: '/src/main/resources', 
-      to: "/target/#{buildname}/WEB-INFO/classes"
+      to: "/target/#{@buildname}/WEB-INFO/classes"
     }, { 
       from: '/src/main/webapp', 
-      to: "/target/#{buildname}"
+      to: "/target/#{@buildname}"
     } ]
   end
 
-  def get_parser(buildname)
-    return @parser if @buildname == buildname
-    @buildname = buildname
 
-    @parser = RuleParser.new(get_rules(@buildname))
+  def load_parser(buildname)
+    raise ArgumentError, PATHNAME_REQUIRED  if buildname == nil
+
+    return @parser if @buildname == buildname
+
+    @buildname = buildname
+    @parser = RuleParser.new(rules)
   end
 
   def copy(path, opts = {})
-    # capatible for windows path
-    path.gsub!('\\', '/')
-
+    path = compatible_windows_path(path)
     buildname = judge_build_name(path) || opts[:buildname]
 
-    if buildname == nil
-      @output.puts PATHNAME_REQUIRED
-      return
+    begin
+      load_parser(buildname).handle(path)
+    rescue ArgumentError => e
+      @output.puts e.message
+      @output.puts FAIL 
     end
 
-    @paser = get_parser(buildname) 
-    @parser.handle(path)
   end
 end
