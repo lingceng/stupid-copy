@@ -3,7 +3,7 @@ require 'pathname'
 require 'fileutils'
 require_relative '../stupidc'
 
-module TestUtils
+module MyFileUtil
 
   def touch(file_path)
       FileUtils.mkpath(File.dirname(file_path))
@@ -18,7 +18,7 @@ module TestUtils
 end
 
 describe Stupidc do
-  include TestUtils
+  include MyFileUtil
 
   
   before do
@@ -30,8 +30,6 @@ describe Stupidc do
 
     @workspace = File.dirname(__FILE__) + '/workspace'
     @project = %{magicsale}
-
-    @rp = RuleParser.new(@stupidc.get_rules(@project), @input, @output)
 
     @target = "#{@workspace}/#{@project}/target/#{@project}/magic_list.jsp"
     @src = "#{@workspace}/#{@project}/src/main/webapp/magic_list.jsp"
@@ -57,27 +55,27 @@ describe Stupidc do
     it "should copy file to source when file is target" do
       touch @target
       @stupidc.copy(@target)
-      assert FileTest.exist?(@src)
+      FileTest.exist?(@src).must_equal true
     end
 
     it "should copy file to source when file is target other case" do
       touch @target2
       @stupidc.copy(@target2)
-      assert FileTest.exist?(@src2)
+      FileTest.exist?(@src2).must_equal true
     end
 
 
     it "should copy file to target when  a buildname is given" do
       touch @src
       @stupidc.copy(@src, buildname: @project)
-      assert FileTest.exist?(@target)
+      FileTest.exist?(@target).must_equal true
     end
 
 
     it "should copy file to target when  a buildname is given other case" do
       touch @src2
       @stupidc.copy(@src2, buildname: @project)
-      assert FileTest.exist?(@target2)
+      FileTest.exist?(@target2).must_equal true
     end
 
     it "should output fail info when :from is not exist" do
@@ -92,7 +90,7 @@ describe Stupidc do
 end
 
 describe RuleParser do
-  include TestUtils
+  include MyFileUtil
 
   before do
     @input = MiniTest::Mock.new
