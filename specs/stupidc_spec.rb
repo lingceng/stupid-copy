@@ -99,10 +99,6 @@ describe Stupidc do
       @output.verify
     end
 
-    it "should raise error when buildname is nil" do
-      proc { @stupidc.load_parser(nil) }.must_raise  ArgumentError
-    end
-
   end
 
 end
@@ -133,14 +129,60 @@ describe RuleParser do
     @output.verify
   end
 
-  it "should output fail info when :to is existed" do
+  it "should ask when :to is existed" do
     touch @f
     touch @t
 
-    @output.expect :puts, nil, [RuleParser::EXISTED]
+    @output.expect :puts, nil, ["-- #{@t} existed, override? y(es)/no "]
+    @input.expect :gets, "yes", []
+    @rp.do_copy(@f, @t, false)
+    @output.verify
+    @input.verify
+
+    FileTest.exist?(@t).must_equal true
+  end
+
+  it "should skip copy when input no" do
+    touch @f
+    touch @t
+
+    @output.expect :puts, nil, ["-- #{@t} existed, override? y(es)/no "]
+    @input.expect :gets, "no", []
+    @output.expect :puts, nil, ["-- skiped!"]
     @rp.do_copy(@f, @t)
     @output.verify
+    @input.verify
   end
+   
+  ["y", "Y", "Yes", "YES", "yes", ""].each do |c|
+    it "should return :yes" do
+      @output.expect :puts, nil, ["hello?"]
+
+      @input.expect :gets, c, []
+      @rp.ask("hello?").must_equal :yes, "#{c} should means yes"
+    end
+  end
+  
+ ["n", "N", "NO", "No", "no"].each do |c|
+    it "should return :no" do
+      @output.expect :puts, nil, ["hello?"]
+
+      @input.expect :gets, c, []
+      @rp.ask("hello?").must_equal :no
+    end
+  end
+
+  it "should return defualt" do
+    @output.expect :puts, nil, ["hello?"]
+    @input.expect :gets, "", []
+    @rp.ask("hello?", :yes).must_equal :yes
+
+    @output.expect :puts, nil, ["hello?"]
+    @input.expect :gets, "", []
+    @rp.ask("hello?", :no).must_equal :no
+  end
+ 
+
 
   it "should output copy info" do
     touch @f

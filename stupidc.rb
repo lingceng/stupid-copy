@@ -39,8 +39,20 @@ class RuleParser
     end
   end
 
+  def ask(msg, default=:yes) 
+    @output.puts msg
+    input = @input.gets.strip
 
-  def do_copy(src, target) 
+    return default if input.empty? 
+
+    if input =~ /^ye?s?$/i
+      :yes 
+    else 
+      :no
+    end
+  end
+
+  def do_copy(src, target, verbose=true) 
 
     unless FileTest.exist? src
       @output.puts NOT_EXIST 
@@ -48,18 +60,21 @@ class RuleParser
     end
 
     if FileTest.exist? target 
-      @output.puts EXISTED 
-      return
+      cmd = ask "-- #{target} existed, override? y(es)/no "
+      if cmd == :no
+        @output.puts "-- skiped!" 
+        return
+      end
     end
 
-    @output.puts "-- from : #{src} "
-    @output.puts "-- to : #{target}" 
-
+    if verbose
+      @output.puts "-- from : #{src} "
+      @output.puts "-- to : #{target}" 
+    end
     mkpath(File.dirname(target))
     copy(src, target)
 
   end
-  
 
 end
 
