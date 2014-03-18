@@ -6,8 +6,8 @@ require_relative '../stupidc'
 module MyFileUtil
 
   def touch(file_path)
-      FileUtils.mkpath(File.dirname(file_path))
-      File.open(file_path, 'w') { |f| f.puts file_path }
+    FileUtils.mkpath(File.dirname(file_path))
+    File.open(file_path, 'w') { |f| f.puts file_path }
   end
 
   def rmdir_if_exist(dir_path)
@@ -20,7 +20,7 @@ end
 describe Stupidc do
   include MyFileUtil
 
-  
+
   before do
     @input = MiniTest::Mock.new
     @output = MiniTest::Mock.new
@@ -37,7 +37,7 @@ describe Stupidc do
 
   describe "judge_build_name" do
     it "must return the buildname when path contains /target/buildname/" do
-       @stupidc.judge_build_name(@target).must_equal 'magicsale'
+      @stupidc.judge_build_name(@target).must_equal 'magicsale'
     end
   end
 
@@ -76,11 +76,25 @@ describe Stupidc do
       FileTest.exist?(@target2).must_equal true
     end
 
+    it "should expand pattern" do
+      target3  = "#{@workspace}/#{@project}/target/#{@project}/magic_list3.jsp"
+      src3  = "#{@workspace}/#{@project}/src/main/webapp/magic_list3.jsp"
+      path  = "#{@workspace}/#{@project}/target/#{@project}/*.jsp"
+
+      touch @target
+      touch target3
+
+      @stupidc.copy(path)
+      FileTest.exist?(@src).must_equal true
+      FileTest.exist?(src3).must_equal true
+    end
+
+
+
     it "should output error message info when exception" do
       touch @src
-
-      @output.expect :puts, nil, [String]
-      @output.expect :puts, nil, [Stupidc::FAIL]
+      "#{@workspace}/#{@project}/target/#{@project}/magic_list.jsp"
+      @output.expect :puts, nil, [Stupidc::PATHNAME_REQUIRED]
       @stupidc.copy(@src)
       @output.verify
     end
@@ -112,32 +126,31 @@ describe RuleParser do
     rmdir_if_exist @path 
   end
 
-    it "should output fail info when :from is not exist" do
+  it "should output fail info when :from is not exist" do
 
-      @output.expect :puts, nil, [RuleParser::NOT_EXIST]
-      @rp.do_copy(@f, @t)
-      @output.verify
-    end
+    @output.expect :puts, nil, [RuleParser::NOT_EXIST]
+    @rp.do_copy(@f, @t)
+    @output.verify
+  end
 
-    it "should output fail info when :to is existed" do
-      touch @f
-      touch @t
+  it "should output fail info when :to is existed" do
+    touch @f
+    touch @t
 
-      @output.expect :puts, nil, [RuleParser::EXISTED]
-      @rp.do_copy(@f, @t)
-      @output.verify
-    end
+    @output.expect :puts, nil, [RuleParser::EXISTED]
+    @rp.do_copy(@f, @t)
+    @output.verify
+  end
 
-    it "should output copy info" do
-      touch @f
-      
-      @output.expect :puts, nil, ["\n-- start copy -- "]
-      @output.expect :puts, nil, ["-- from : #{@f} "]
-      @output.expect :puts, nil, ["-- to : #{@t}"]
-      @output.expect :puts, nil, ["-- end copy --"]
-      @rp.do_copy(@f, @t)
-      @output.verify
-    end
+  it "should output copy info" do
+    touch @f
+
+    @output.expect :puts, nil, ["-- from : #{@f} "]
+    @output.expect :puts, nil, ["-- to : #{@t}"]
+    @rp.do_copy(@f, @t)
+    @output.verify
+  end
+
 
 
 end

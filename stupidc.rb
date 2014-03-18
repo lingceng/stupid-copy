@@ -20,18 +20,22 @@ class RuleParser
 
 
 
-  def handle(path)
-    @rules.each do |r| 
-      if path[ r[:from] ]
-        target = path.sub(r[:from], r[:to]) 
-      elsif path[ r[:to] ]
-        target = path.sub(r[:to], r[:from]) 
+  def handle(path_param)
+    Dir[path_param].each do |path|
+
+      @rules.each do |r| 
+        if path[ r[:from] ]
+          target = path.sub(r[:from], r[:to]) 
+        elsif path[ r[:to] ]
+          target = path.sub(r[:to], r[:from]) 
+        end
+
+        if target != nil 
+          do_copy(path, target)
+          break
+        end
       end
 
-      if target != nil 
-        do_copy(path, target)
-        break
-      end
     end
   end
 
@@ -48,14 +52,12 @@ class RuleParser
       return
     end
 
-    @output.puts "\n-- start copy -- " 
     @output.puts "-- from : #{src} "
     @output.puts "-- to : #{target}" 
 
     mkpath(File.dirname(target))
     copy(src, target)
 
-    @output.puts "-- end copy --" 
   end
   
 
@@ -63,7 +65,6 @@ end
 
 class Stupidc
   PATHNAME_REQUIRED = "--- buildname parameter required!"
-  FAIL = "--- copy failed!" 
 
   def initialize(input=STDIN, output=STDOUT)
     @input = input
@@ -106,7 +107,6 @@ class Stupidc
       load_parser(buildname).handle(path)
     rescue ArgumentError => e
       @output.puts e.message
-      @output.puts FAIL 
     end
 
   end
