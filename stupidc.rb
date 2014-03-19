@@ -71,7 +71,9 @@ class RuleParser
       @output.puts "-- from : #{src} "
       @output.puts "-- to : #{target}" 
     end
-    mkpath(File.dirname(target))
+    
+    dir = File.dirname(target)
+    mkpath(dir) unless FileTest.exist? dir
     copy(src, target)
 
   end
