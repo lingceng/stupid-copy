@@ -70,6 +70,7 @@ class RuleParser
     if verbose
       @output.puts "-- from : #{src} "
       @output.puts "-- to : #{target}" 
+      @output.puts "" 
     end
     
     dir = File.dirname(target)
@@ -99,7 +100,7 @@ class Stupidc
   def rules()
     [ { 
       from: '/src/main/resources', 
-      to: "/target/#{@buildname}/WEB-INFO/classes"
+      to: "/target/#{@buildname}/WEB-INF/classes"
     }, { 
       from: '/src/main/webapp', 
       to: "/target/#{@buildname}"
