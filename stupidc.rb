@@ -10,17 +10,23 @@ class RuleParser
   NOT_EXIST = "--- from path not exist!"
   EXISTED = "--- to path already exist!"
 
+  attr_accessor :verbose
 
   def initialize(rules, input=STDIN, out=STDOUT)
     @rules = rules
 
     @input = input
     @output = out
+
+    @all = false
+    @verbose = true
   end
 
 
 
   def handle(path_param)
+    @all = false
+
     Dir[path_param].each do |path|
 
       @rules.each do |r| 
@@ -40,34 +46,40 @@ class RuleParser
   end
 
   def ask(msg, default=:yes) 
-    @output.puts msg
+    @output.print msg
     input = @input.gets.strip
 
     return default if input.empty? 
 
-    if input =~ /^ye?s?$/i
+    if input =~ /^y(es)?$/i
       :yes 
+    elsif input =~ /^a(ll)?$/i
+      :all
     else 
       :no
     end
   end
 
-  def do_copy(src, target, verbose=true) 
+  def do_copy(src, target) 
 
     unless FileTest.exist? src
       @output.puts NOT_EXIST 
       return
     end
 
-    if FileTest.exist? target 
-      cmd = ask "-- #{target} existed, override? y(es)/no "
+    if FileTest.exist?(target) && @all == false
+      cmd = ask "-- #{target} existed, override? y(es)/all/no: "
       if cmd == :no
         @output.puts "-- skiped!" 
+        @output.puts "" 
         return
+      elsif cmd == :all
+        @all = true
       end
     end
 
-    if verbose
+
+    if @verbose
       @output.puts "-- from : #{src} "
       @output.puts "-- to : #{target}" 
       @output.puts "" 
@@ -97,13 +109,13 @@ class Stupidc
     path.gsub('\\', '/')
   end
 
-  def rules()
+  def self.rules(buildname)
     [ { 
       from: '/src/main/resources', 
-      to: "/target/#{@buildname}/WEB-INF/classes"
+      to: "/target/#{buildname}/WEB-INF/classes"
     }, { 
       from: '/src/main/webapp', 
-      to: "/target/#{@buildname}"
+      to: "/target/#{buildname}"
     } ]
   end
 
@@ -113,8 +125,7 @@ class Stupidc
 
     return @parser if @buildname == buildname
 
-    @buildname = buildname
-    @parser = RuleParser.new(rules)
+    @parser = RuleParser.new(Stupidc.rules(buildname))
   end
 
   def copy(path, opts = {})
