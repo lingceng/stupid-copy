@@ -43,7 +43,7 @@ describe Stupidc do
 
   describe "copy" do
     before do
-      @target2 = "#{@workspace}/#{@project}/target/#{@project}/WEB-INFO/classes/magic_list.xml"
+      @target2 = "#{@workspace}/#{@project}/target/#{@project}/WEB-INF/classes/magic_list.xml"
       @src2 = "#{@workspace}/#{@project}/src/main/resources/magic_list.xml"
 
       rmdir_if_exist(@workspace)
@@ -189,6 +189,7 @@ describe RuleParser do
 
     @output.expect :puts, nil, ["-- from : #{@f} "]
     @output.expect :puts, nil, ["-- to : #{@t}"]
+    @output.expect :puts, nil, [""]
     @rp.do_copy(@f, @t)
     @output.verify
   end
